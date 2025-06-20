@@ -8,11 +8,16 @@ import {
   StyleSheet,
   ActivityIndicator,
   View,
+  TouchableOpacity,
 } from 'react-native';
 import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-export default function LoginScreen() {
+type Props = {
+  onCreateAccount: () => void;
+};
+
+export default function LoginScreen({ onCreateAccount }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +28,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      // onAuthStateChanged in App.tsx will fire and show HomeScreen
+      // onAuthStateChanged in App.tsx will switch to HomeScreen
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Unexpected error—please try again.'
-      );
+      setError(err instanceof Error ? err.message : 'Unexpected error—try again.');
     } finally {
       setLoading(false);
     }
@@ -38,6 +39,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Log In</Text>
+
       <TextInput
         placeholder="Email"
         value={email}
@@ -46,6 +48,7 @@ export default function LoginScreen() {
         autoCapitalize="none"
         style={styles.input}
       />
+
       <TextInput
         placeholder="Password"
         value={password}
@@ -53,7 +56,9 @@ export default function LoginScreen() {
         secureTextEntry
         style={styles.input}
       />
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <View style={styles.button}>
         {loading ? (
           <ActivityIndicator />
@@ -61,6 +66,10 @@ export default function LoginScreen() {
           <Button title="Log In" onPress={handleLogin} />
         )}
       </View>
+
+      <TouchableOpacity onPress={onCreateAccount} style={styles.link}>
+        <Text style={styles.linkText}>Don’t have an account? Sign Up</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -92,5 +101,12 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     marginTop: 8,
+  },
+  link: {
+    marginTop: 24,
+    alignSelf: 'center',
+  },
+  linkText: {
+    color: '#0066cc',
   },
 });

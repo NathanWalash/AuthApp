@@ -14,11 +14,11 @@ export default function App() {
   const [mode, setMode] = useState<'landing' | 'login' | 'signup'>('landing');
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (usr) => {
+    const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
       if (initializing) setInitializing(false);
     });
-    return unsub;
+    return unsubscribe;
   }, [initializing]);
 
   if (initializing) {
@@ -33,7 +33,7 @@ export default function App() {
     return <HomeScreen user={user} />;
   }
 
-  // Not authed yet:
+  // Not authenticated yet:
   if (mode === 'landing') {
     return (
       <LandingScreen
@@ -44,7 +44,7 @@ export default function App() {
   }
 
   if (mode === 'login') {
-    return <LoginScreen />;
+    return <LoginScreen onCreateAccount={() => setMode('signup')} />;
   }
 
   // mode === 'signup'
