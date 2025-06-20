@@ -8,11 +8,16 @@ import {
   StyleSheet,
   ActivityIndicator,
   View,
+  TouchableOpacity,
 } from 'react-native';
 import { auth } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-export default function SignupScreen() {
+type Props = {
+  onLogin: () => void;
+};
+
+export default function SignupScreen({ onLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -28,7 +33,7 @@ export default function SignupScreen() {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), password);
-      // onAuthStateChanged will fire → HomeScreen
+      // onAuthStateChanged → HomeScreen
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unexpected error.');
     } finally {
@@ -39,6 +44,7 @@ export default function SignupScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Create Account</Text>
+
       <TextInput
         placeholder="Email"
         value={email}
@@ -47,6 +53,7 @@ export default function SignupScreen() {
         autoCapitalize="none"
         style={styles.input}
       />
+
       <TextInput
         placeholder="Password"
         value={password}
@@ -54,6 +61,7 @@ export default function SignupScreen() {
         secureTextEntry
         style={styles.input}
       />
+
       <TextInput
         placeholder="Confirm Password"
         value={confirm}
@@ -61,25 +69,57 @@ export default function SignupScreen() {
         secureTextEntry
         style={styles.input}
       />
-      {error && <Text style={styles.error}>{error}</Text>}
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <View style={styles.button}>
         {loading ? (
           <ActivityIndicator />
         ) : (
-          <Button title="Sign Up" onPress={handleSignup} />
+          <Button title="Create Account" onPress={handleSignup} />
         )}
       </View>
+
+      <TouchableOpacity onPress={onLogin} style={styles.link}>
+        <Text style={styles.linkText}>Already have an account? Log In</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#fff' },
-  header: { fontSize: 28, marginBottom: 24, textAlign: 'center' },
-  input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12,
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
-  button: { marginTop: 16 },
-  error: { color: 'red', textAlign: 'center', marginTop: 8 },
+  header: {
+    fontSize: 28,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  button: {
+    marginTop: 16,
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  link: {
+    marginTop: 24,
+    alignSelf: 'center',
+  },
+  linkText: {
+    color: '#0066cc',
+  },
 });

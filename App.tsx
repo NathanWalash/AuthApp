@@ -33,7 +33,6 @@ export default function App() {
     return <HomeScreen user={user} />;
   }
 
-  // Not authenticated yet:
   if (mode === 'landing') {
     return (
       <LandingScreen
@@ -48,7 +47,7 @@ export default function App() {
   }
 
   // mode === 'signup'
-  return <SignupScreen />;
+  return <SignupScreen onLogin={() => setMode('login')} />;
 }
 
 const styles = StyleSheet.create({
