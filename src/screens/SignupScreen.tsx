@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import {
   SafeAreaView,
   TextInput,
-  Button,
   Text,
-  View,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
+  View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { auth, db } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -28,11 +29,11 @@ export default function SignupScreen({ onLogin }: Props) {
   const handleSignup = async () => {
     setError(null);
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError('Passwords must match.');
       return;
     }
     if (!firstName || !lastName || !dob) {
-      setError('Please fill out all fields.');
+      setError('Fill out all fields.');
       return;
     }
     setLoading(true);
@@ -42,8 +43,7 @@ export default function SignupScreen({ onLogin }: Props) {
         email.trim(),
         password
       );
-      const uid = cred.user.uid;
-      await setDoc(doc(db, 'users', uid), {
+      await setDoc(doc(db, 'users', cred.user.uid), {
         firstName,
         lastName,
         dateOfBirth: dob,
@@ -51,76 +51,97 @@ export default function SignupScreen({ onLogin }: Props) {
         createdAt: Date.now(),
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unexpected error.');
+      setError((err as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-6 justify-center">
-      <Text className="text-3xl font-bold text-center mb-6">
-        Create Account
-      </Text>
+    <LinearGradient
+      style={{ flex: 1 }}
+      colors={['#7B68EE', '#004ba0']}
+      start={[0, 0]}
+      end={[1, 1]}
+    >
+      <SafeAreaView className="flex-1 justify-center items-center bg-transparent px-4">
+          <View className="bg-white rounded-2xl p-8 w-11/12 max-w-md self-center shadow-card">
+            <Text className="text-2xl font-bold text-center text-brand-500 mb-6">
+              Create Account
+            </Text>
 
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Date of Birth (YYYY-MM-DD)"
-        value={dob}
-        onChangeText={setDob}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-4"
-        placeholder="Confirm Password"
-        value={confirm}
-        onChangeText={setConfirm}
-        secureTextEntry
-      />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4 text-base"
+              placeholder="First Name"
+              placeholderTextColor="#999"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4 text-base"
+              placeholder="Last Name"
+              placeholderTextColor="#999"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4 text-base"
+              placeholder="Date of Birth (YYYY-MM-DD)"
+              placeholderTextColor="#999"
+              value={dob}
+              onChangeText={setDob}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4 text-base"
+              placeholder="Email"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4 text-base"
+              placeholder="Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-6 text-base"
+              placeholder="Confirm Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={confirm}
+              onChangeText={setConfirm}
+            />
 
-      {error && (
-        <Text className="text-red-500 text-center mb-4">{error}</Text>
-      )}
+            {error && (
+              <Text className="text-red-500 text-center mb-4">{error}</Text>
+            )}
 
-      <View className="mb-4">
-        {loading ? (
-          <ActivityIndicator />
-        ) : (
-          <Button title="Sign Up" onPress={handleSignup} />
-        )}
-      </View>
+            <TouchableOpacity
+              onPress={handleSignup}
+              disabled={loading}
+              className="bg-brand-500 rounded-full py-3 mb-6"
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center font-semibold">
+                  Sign Up
+                </Text>
+              )}
+            </TouchableOpacity>
 
-      <TouchableOpacity onPress={onLogin}>
-        <Text className="text-blue-600 text-center">
-          Already have an account? Log In
-        </Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+            <TouchableOpacity onPress={onLogin}>
+              <Text className="text-sm text-brand-500 text-center">
+                Already have an account? Log In
+              </Text>
+            </TouchableOpacity>
+          </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   TextInput,
-  Button,
   Text,
-  View,
-  ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
+  View,
 } from 'react-native';
-import { auth, db } from '../firebase/config';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   updateEmail,
   updatePassword,
@@ -17,105 +17,92 @@ import {
   EmailAuthProvider,
   User,
 } from 'firebase/auth';
+import { auth, db } from '../firebase/config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-type Props = {
-  user: User;
-  onDone: () => void;
-};
+type Props = { user: User; onDone: () => void };
 
 export default function AccountSettingsScreen({ user, onDone }: Props) {
-  // Profile
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName]   = useState('');
   const [dob, setDob]             = useState('');
-  // Email/Password
-  const [newEmail, setNewEmail]           = useState(user.email || '');
+  const [newEmail, setNewEmail]         = useState(user.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword]     = useState('');
+  const [newPassword, setNewPassword]   = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  // Status
   const [loading, setLoading]         = useState(true);
+  const [status, setStatus]           = useState<{ error?: string; message?: string }>({});
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingEmail, setSavingEmail]     = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [error, setError]             = useState<string | null>(null);
-  const [message, setMessage]         = useState<string | null>(null);
 
   useEffect(() => {
     getDoc(doc(db, 'users', user.uid))
       .then((snap) => {
         if (snap.exists()) {
-          const data = snap.data() as any;
-          setFirstName(data.firstName || '');
-          setLastName(data.lastName || '');
-          setDob(data.dateOfBirth || '');
+          const d = snap.data() as any;
+          setFirstName(d.firstName || '');
+          setLastName(d.lastName || '');
+          setDob(d.dateOfBirth || '');
         }
       })
       .finally(() => setLoading(false));
   }, [user.uid]);
 
   const reauth = () => {
-    const cred = EmailAuthProvider.credential(
-      user.email || '',
-      currentPassword
-    );
+    const cred = EmailAuthProvider.credential(user.email || '', currentPassword);
     return reauthenticateWithCredential(user, cred);
   };
 
   const saveProfile = async () => {
-    setError(null); setMessage(null);
+    setStatus({});
     if (!firstName || !lastName || !dob) {
-      setError('All profile fields are required.');
+      setStatus({ error: 'All fields required.' });
       return;
     }
     setSavingProfile(true);
     try {
-      await updateDoc(doc(db, 'users', user.uid), {
-        firstName,
-        lastName,
-        dateOfBirth: dob,
-      });
-      setMessage('Profile updated.');
+      await updateDoc(doc(db, 'users', user.uid), { firstName, lastName, dateOfBirth: dob });
+      setStatus({ message: 'Profile updated.' });
     } catch (err) {
-      setError((err as Error).message);
+      setStatus({ error: (err as Error).message });
     } finally {
       setSavingProfile(false);
     }
   };
 
   const saveEmail = async () => {
-    setError(null); setMessage(null);
+    setStatus({});
     if (!newEmail.trim() || !currentPassword) {
-      setError('Email and current password required.');
+      setStatus({ error: 'Email + current password required.' });
       return;
     }
     setSavingEmail(true);
     try {
       await reauth();
       await updateEmail(user, newEmail.trim());
-      setMessage('Email updated. Please log in again.');
+      setStatus({ message: 'Email updated. Log back in.' });
       onDone();
     } catch (err) {
-      setError((err as Error).message);
+      setStatus({ error: (err as Error).message });
     } finally {
       setSavingEmail(false);
     }
   };
 
   const savePassword = async () => {
-    setError(null); setMessage(null);
+    setStatus({});
     if (newPassword !== confirmPassword || !currentPassword) {
-      setError('Passwords must match and current password required.');
+      setStatus({ error: 'Passwords must match + current password.' });
       return;
     }
     setSavingPassword(true);
     try {
       await reauth();
       await updatePassword(user, newPassword);
-      setMessage('Password updated.');
+      setStatus({ message: 'Password updated.' });
     } catch (err) {
-      setError((err as Error).message);
+      setStatus({ error: (err as Error).message });
     } finally {
       setSavingPassword(false);
     }
@@ -123,107 +110,128 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator />
-      </SafeAreaView>
+      <LinearGradient style={{ flex: 1 }} colors={['#7B68EE', '#004ba0']}>
+        <SafeAreaView className="flex-1 justify-center items-center bg-transparent px-4">
+          <ActivityIndicator color="#fff" size="large" />
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={undefined} className="bg-white px-6 py-4">
-      <Text className="text-2xl font-bold text-center mb-4">
-        Account Settings
-      </Text>
-      {message && <Text className="text-green-600 text-center mb-2">{message}</Text>}
-      {error   && <Text className="text-red-500 text-center mb-2">{error}</Text>}
+    <LinearGradient style={{ flex: 1 }} colors={['#7B68EE', '#004ba0']}>
+      <SafeAreaView className="flex-1 bg-transparent px-4">
+          <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md self-center shadow-card">
+            <Text className="text-2xl font-bold text-center text-brand-500 mb-4">
+              Account Settings
+            </Text>
+            {status.message && (
+              <Text className="text-green-600 text-center mb-2">{status.message}</Text>
+            )}
+            {status.error && (
+              <Text className="text-red-500 text-center mb-2">{status.error}</Text>
+            )}
 
-      {/* Profile Section */}
-      <Text className="text-xl font-semibold mt-4 mb-2">Edit Profile</Text>
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Date of Birth (YYYY-MM-DD)"
-        value={dob}
-        onChangeText={setDob}
-      />
-      <View className="mb-4">
-        <Button
-          title={savingProfile ? 'Saving…' : 'Save Profile'}
-          onPress={saveProfile}
-          disabled={savingProfile}
-        />
-      </View>
+            {/* Profile */}
+            <Text className="font-semibold mt-4 mb-2">Edit Profile</Text>
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-3"
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-3"
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4"
+              placeholder="DOB (YYYY-MM-DD)"
+              value={dob}
+              onChangeText={setDob}
+            />
+            <TouchableOpacity
+              onPress={saveProfile}
+              disabled={savingProfile}
+              className="bg-brand-500 rounded-full py-2 mb-5"
+            >
+              {savingProfile ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center">Save Profile</Text>
+              )}
+            </TouchableOpacity>
 
-      {/* Change Email */}
-      <Text className="text-xl font-semibold mt-6 mb-2">Change Email</Text>
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="New Email"
-        value={newEmail}
-        onChangeText={setNewEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-4"
-        placeholder="Current Password"
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-        secureTextEntry
-      />
-      <View className="mb-4">
-        <Button
-          title={savingEmail ? 'Updating…' : 'Update Email'}
-          onPress={saveEmail}
-          disabled={savingEmail}
-        />
-      </View>
+            {/* Change Email */}
+            <Text className="font-semibold mt-4 mb-2">Change Email</Text>
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-3"
+              placeholder="New Email"
+              value={newEmail}
+              onChangeText={setNewEmail}
+              autoCapitalize="none"
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4"
+              placeholder="Current Password"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TouchableOpacity
+              onPress={saveEmail}
+              disabled={savingEmail}
+              className="bg-brand-500 rounded-full py-2 mb-5"
+            >
+              {savingEmail ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center">Update Email</Text>
+              )}
+            </TouchableOpacity>
 
-      {/* Change Password */}
-      <Text className="text-xl font-semibold mt-6 mb-2">Change Password</Text>
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="Current Password"
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-        secureTextEntry
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-3"
-        placeholder="New Password"
-        value={newPassword}
-        onChangeText={setNewPassword}
-        secureTextEntry
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-4 py-2 mb-4"
-        placeholder="Confirm New Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      <View className="mb-4">
-        <Button
-          title={savingPassword ? 'Updating…' : 'Update Password'}
-          onPress={savePassword}
-          disabled={savingPassword}
-        />
-      </View>
+            {/* Change Password */}
+            <Text className="font-semibold mt-4 mb-2">Change Password</Text>
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-3"
+              placeholder="Current Password"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-3"
+              placeholder="New Password"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <TextInput
+              className="border-b border-gray-300 pb-2 mb-4"
+              placeholder="Confirm Password"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TouchableOpacity
+              onPress={savePassword}
+              disabled={savingPassword}
+              className="bg-brand-500 rounded-full py-2 mb-6"
+            >
+              {savingPassword ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center">Update Password</Text>
+              )}
+            </TouchableOpacity>
 
-      <View className="mb-8">
-        <Button title="Done" onPress={onDone} />
-      </View>
-    </ScrollView>
+            <TouchableOpacity onPress={onDone} className="mb-2">
+              <Text className="text-sm text-gray-600 text-center">Done</Text>
+            </TouchableOpacity>
+          </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
