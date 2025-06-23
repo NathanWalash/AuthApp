@@ -1,17 +1,17 @@
 # AuthApp
 
-A React Native Expo app demonstrating persistent email/password authentication with Firebase and storing user profiles in Cloud Firestore.
+A React Native Expo application that implements persistent email/password authentication with Firebase and user profiles stored in Cloud Firestore. Provides a Login/Signup flow, password reset, and account settings screens.
 
 ## Prerequisites
 
 * Node.js (v14 or newer)
 * npm or Yarn
-* Expo CLI (local via `npx`)
+* Expo CLI (available via `npx expo`)
 * A Firebase account
 
-## Getting Started
+## Installation
 
-1. **Clone the repo**
+1. **Clone the repository**
 
    ```bash
    git clone <YOUR_REPO_URL>
@@ -26,13 +26,12 @@ A React Native Expo app demonstrating persistent email/password authentication w
    npx expo install expo-constants @react-native-async-storage/async-storage
    ```
 
-3. **Create a Firebase project**
+3. **Configure Firebase**
 
-   1. Go to the [Firebase Console](https://console.firebase.google.com/) and click **Add project**.
-   2. Follow the prompts to create a new project.
-   3. In the Console sidebar, select **Authentication → Sign-in method**, and enable **Email/Password**.
-   4. In the Console sidebar, select **Firestore Database**, then click **Create database**. Choose your region and start in **Production mode** (or **Test mode** for a 30-day trial).
-   5. In **Firestore → Rules**, replace with:
+   1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+   2. Under **Authentication → Sign-in method**, enable **Email/Password**.
+   3. Under **Firestore Database**, click **Create database**, choose a location, and start in **Test mode** or **Production mode**.
+   4. In **Firestore → Rules**, use:
 
       ```js
       service cloud.firestore {
@@ -44,29 +43,42 @@ A React Native Expo app demonstrating persistent email/password authentication w
         }
       }
       ```
+   5. Under **Project Settings → Your apps**, register a **Web** app and copy the Firebase config.
 
-      Then click **Publish**.
-
-4. **Register a Web App and copy config**
-
-   1. In Firebase Console, go to **Project Settings → Your apps**, click **\</> Web**.
-   2. Enter an app nickname (e.g. `AuthAppWeb`), then click **Register app**.
-   3. Copy the generated configuration object.
-
-5. **Create your `.env` file**
-
-   In the project root, create a file named `.env` with the following contents, replacing the placeholders with your Firebase config values:
+4. **Create `.env` file**
+   In the project root, create `.env` and add your Firebase config values:
 
    ```env
-   FIREBASE_API_KEY=your_api_key_here
-   FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   FIREBASE_API_KEY=your_api_key
+   FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
    FIREBASE_PROJECT_ID=your_project_id
-   FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-   FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    FIREBASE_APP_ID=your_app_id
    ```
 
-   Ensure `.env` is listed in `.gitignore` to avoid committing secrets.
+   > Ensure `.env` is in `.gitignore` to keep your keys private.
+
+5. **Update `app.config.js`**
+   Make sure `app.config.js` reads from `process.env` and exposes them via `expo-constants`:
+
+   ```js
+   import 'dotenv/config';
+   export default {
+     expo: {
+       name: 'AuthApp',
+       slug: 'AuthApp',
+       extra: {
+         firebaseApiKey: process.env.FIREBASE_API_KEY,
+         firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
+         firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
+         firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+         firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+         firebaseAppId: process.env.FIREBASE_APP_ID,
+       },
+     },
+   };
+   ```
 
 6. **Run the app**
 
@@ -74,9 +86,9 @@ A React Native Expo app demonstrating persistent email/password authentication w
    npx expo start
    ```
 
-   * Press `a` to open on Android emulator/device
-   * Press `i` to open on iOS simulator
-   * Press `w` to open in web browser
+   * Press `a` for Android
+   * Press `i` for iOS
+   * Press `w` for Web
 
 ## Project Structure
 
@@ -84,43 +96,28 @@ A React Native Expo app demonstrating persistent email/password authentication w
 AuthApp/
 ├── src/
 │   ├── firebase/
-│   │   └── config.ts       # Firebase initialization (auth + Firestore)
+│   │   └── config.ts             # Firebase initialization (Auth & Firestore)
 │   └── screens/
-│       ├── LandingScreen.tsx
-│       ├── LoginScreen.tsx
-│       ├── SignupScreen.tsx
-│       └── HomeScreen.tsx
-├── App.tsx
-├── app.config.js           # Expo config loading .env values
-├── metro.config.js         # Metro bundler config for React Native
-├── .env                    # Your Firebase credentials (ignored)
-└── package.json
+│       ├── LandingScreen.tsx     # Welcome with Login/Create
+│       ├── LoginScreen.tsx       # Email/Password login
+│       ├── SignupScreen.tsx      # Email/Password signup
+│       ├── ResetPasswordScreen.tsx # Password reset flow
+│       ├── AccountSettingsScreen.tsx # Edit profile, change email/password
+│       └── HomeScreen.tsx        # Authenticated home
+├── App.tsx                       # Root entrypoint
+├── app.config.js                 # Expo config loading .env
+├── .env                          # Firebase keys (ignored)
+├── package.json
+└── README.md
 ```
 
 ## Environment Variables
 
-The app uses `expo-constants` to inject the following from `app.config.js`:
+Exposed via Expo Constants in code (`Constants.expoConfig.extra`):
 
-* `FIREBASE_API_KEY`
-* `FIREBASE_AUTH_DOMAIN`
-* `FIREBASE_PROJECT_ID`
-* `FIREBASE_STORAGE_BUCKET`
-* `FIREBASE_MESSAGING_SENDER_ID`
-* `FIREBASE_APP_ID`
-
-## Notes
-
-* On native (iOS/Android), Firebase Auth state persists using AsyncStorage.
-* On web, Auth state persists using `window.localStorage`.
-
-## Troubleshooting
-
-* If you see errors about missing `getReactNativePersistence`, clear Metro cache and restart:
-
-  ```bash
-  npx expo start -c
-  ```
-* If your Firestore reads/writes are denied, double-check your security rules and authentication state.
-
----
-
+* `firebaseApiKey`
+* `firebaseAuthDomain`
+* `firebaseProjectId`
+* `firebaseStorageBucket`
+* `firebaseMessagingSenderId`
+* `firebaseAppId`
