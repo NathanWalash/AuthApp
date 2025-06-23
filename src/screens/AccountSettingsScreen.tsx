@@ -120,7 +120,7 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
 
   return (
     <LinearGradient style={{ flex: 1 }} colors={['#7B68EE', '#004ba0']}>
-      <SafeAreaView className="flex-1 bg-transparent px-4">
+      <SafeAreaView className="flex-1 justify-center items-center bg-transparent px-4">
           <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md self-center shadow-card">
             <Text className="text-2xl font-bold text-center text-brand-500 mb-4">
               Account Settings
