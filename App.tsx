@@ -1,5 +1,6 @@
 // App.tsx
 import React, { useEffect, useState } from 'react';
+import "./global.css";
 import { SafeAreaView, Text, StyleSheet } from 'react-native';
 import { auth } from './src/firebase/config';
 import { onAuthStateChanged, User } from 'firebase/auth';
