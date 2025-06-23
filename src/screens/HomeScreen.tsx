@@ -4,9 +4,8 @@ import {
   SafeAreaView,
   Text,
   Button,
-  StyleSheet,
-  ActivityIndicator,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
 import { signOut, User } from 'firebase/auth';
@@ -20,9 +19,7 @@ interface Profile {
   email: string;
 }
 
-type Props = {
-  user: User;
-};
+type Props = { user: User };
 
 export default function HomeScreen({ user }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -45,13 +42,9 @@ export default function HomeScreen({ user }: Props) {
     fetchProfile();
   }, [user.uid]);
 
-  const handleLogout = () => {
-    signOut(auth);
-  };
-
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator />
       </SafeAreaView>
     );
@@ -70,49 +63,23 @@ export default function HomeScreen({ user }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.welcome}>
+    <SafeAreaView className="flex-1 bg-white px-6 py-8">
+      <Text className="text-2xl font-bold text-center mb-4">
         Hello, {profile?.firstName} {profile?.lastName}!
       </Text>
-      <Text style={styles.detail}>
+      <Text className="text-base text-center mb-2">
         Date of Birth: {profile?.dateOfBirth}
       </Text>
-      <Text style={styles.detail}>Email: {profile?.email}</Text>
+      <Text className="text-base text-center mb-6">
+        Email: {profile?.email}
+      </Text>
 
-      <View style={styles.button}>
-        <Button title="Edit Profile" onPress={() => setEditing(true)} />
+      <View className="mb-4">
+        <Button title="Account Settings" onPress={() => setEditing(true)} />
       </View>
-      <View style={styles.button}>
-        <Button title="Log Out" onPress={handleLogout} />
+      <View>
+        <Button title="Log Out" onPress={() => signOut(auth)} />
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: '#fff',
-  },
-  welcome: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  detail: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  button: {
-    marginTop: 16,
-    alignSelf: 'center',
-    width: '60%',
-  },
-});

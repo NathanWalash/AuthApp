@@ -5,10 +5,9 @@ import {
   TextInput,
   Button,
   Text,
-  StyleSheet,
-  ActivityIndicator,
   View,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
 import {
@@ -26,25 +25,24 @@ type Props = {
 };
 
 export default function AccountSettingsScreen({ user, onDone }: Props) {
-  // profile fields
+  // Profile
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName]   = useState('');
   const [dob, setDob]             = useState('');
-  // email/password fields
-  const [newEmail, setNewEmail]         = useState(user.email || '');
+  // Email/Password
+  const [newEmail, setNewEmail]           = useState(user.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword]   = useState('');
+  const [newPassword, setNewPassword]     = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  const [loading, setLoading]   = useState(true);
+  // Status
+  const [loading, setLoading]         = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingEmail, setSavingEmail]     = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [error, setError]       = useState<string | null>(null);
-  const [message, setMessage]   = useState<string | null>(null);
+  const [error, setError]             = useState<string | null>(null);
+  const [message, setMessage]         = useState<string | null>(null);
 
   useEffect(() => {
-    // load existing profile
     getDoc(doc(db, 'users', user.uid))
       .then((snap) => {
         if (snap.exists()) {
@@ -57,8 +55,7 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
       .finally(() => setLoading(false));
   }, [user.uid]);
 
-  // helper to reauthenticate
-  const reauth = async () => {
+  const reauth = () => {
     const cred = EmailAuthProvider.credential(
       user.email || '',
       currentPassword
@@ -67,8 +64,7 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
   };
 
   const saveProfile = async () => {
-    setError(null);
-    setMessage(null);
+    setError(null); setMessage(null);
     if (!firstName || !lastName || !dob) {
       setError('All profile fields are required.');
       return;
@@ -89,10 +85,9 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
   };
 
   const saveEmail = async () => {
-    setError(null);
-    setMessage(null);
+    setError(null); setMessage(null);
     if (!newEmail.trim() || !currentPassword) {
-      setError('Email and current password are required.');
+      setError('Email and current password required.');
       return;
     }
     setSavingEmail(true);
@@ -100,7 +95,7 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
       await reauth();
       await updateEmail(user, newEmail.trim());
       setMessage('Email updated. Please log in again.');
-      onDone(); // kick back to Home (you’ll need to sign out elsewhere)
+      onDone();
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -109,10 +104,9 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
   };
 
   const savePassword = async () => {
-    setError(null);
-    setMessage(null);
+    setError(null); setMessage(null);
     if (newPassword !== confirmPassword || !currentPassword) {
-      setError('Passwords must match and current password is required.');
+      setError('Passwords must match and current password required.');
       return;
     }
     setSavingPassword(true);
@@ -129,39 +123,41 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator />
       </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Account Settings</Text>
-      {error   && <Text style={styles.error}>{error}</Text>}
-      {message && <Text style={styles.message}>{message}</Text>}
+    <ScrollView contentContainerStyle={undefined} className="bg-white px-6 py-4">
+      <Text className="text-2xl font-bold text-center mb-4">
+        Account Settings
+      </Text>
+      {message && <Text className="text-green-600 text-center mb-2">{message}</Text>}
+      {error   && <Text className="text-red-500 text-center mb-2">{error}</Text>}
 
       {/* Profile Section */}
-      <Text style={styles.section}>Edit Profile</Text>
+      <Text className="text-xl font-semibold mt-4 mb-2">Edit Profile</Text>
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="First Name"
         value={firstName}
         onChangeText={setFirstName}
-        style={styles.input}
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
-        style={styles.input}
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Date of Birth (YYYY-MM-DD)"
         value={dob}
         onChangeText={setDob}
-        style={styles.input}
       />
-      <View style={styles.button}>
+      <View className="mb-4">
         <Button
           title={savingProfile ? 'Saving…' : 'Save Profile'}
           onPress={saveProfile}
@@ -169,24 +165,24 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
         />
       </View>
 
-      {/* Email Section */}
-      <Text style={styles.section}>Change Email</Text>
+      {/* Change Email */}
+      <Text className="text-xl font-semibold mt-6 mb-2">Change Email</Text>
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="New Email"
         value={newEmail}
         onChangeText={setNewEmail}
-        style={styles.input}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-4"
         placeholder="Current Password"
         value={currentPassword}
         onChangeText={setCurrentPassword}
-        style={styles.input}
         secureTextEntry
       />
-      <View style={styles.button}>
+      <View className="mb-4">
         <Button
           title={savingEmail ? 'Updating…' : 'Update Email'}
           onPress={saveEmail}
@@ -194,30 +190,30 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
         />
       </View>
 
-      {/* Password Section */}
-      <Text style={styles.section}>Change Password</Text>
+      {/* Change Password */}
+      <Text className="text-xl font-semibold mt-6 mb-2">Change Password</Text>
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Current Password"
         value={currentPassword}
         onChangeText={setCurrentPassword}
-        style={styles.input}
         secureTextEntry
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="New Password"
         value={newPassword}
         onChangeText={setNewPassword}
-        style={styles.input}
         secureTextEntry
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-4"
         placeholder="Confirm New Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        style={styles.input}
         secureTextEntry
       />
-      <View style={styles.button}>
+      <View className="mb-4">
         <Button
           title={savingPassword ? 'Updating…' : 'Update Password'}
           onPress={savePassword}
@@ -225,23 +221,9 @@ export default function AccountSettingsScreen({ user, onDone }: Props) {
         />
       </View>
 
-      <View style={styles.button}>
+      <View className="mb-8">
         <Button title="Done" onPress={onDone} />
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  center:    { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { padding: 24, backgroundColor: '#fff' },
-  header:    { fontSize: 24, textAlign: 'center', marginBottom: 16 },
-  section:   { marginTop: 24, fontSize: 18, marginBottom: 8 },
-  input:     {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12,
-  },
-  button:    { marginTop: 12 },
-  error:     { color: 'red', textAlign: 'center', marginBottom: 8 },
-  message:   { color: 'green', textAlign: 'center', marginBottom: 8 },
-});

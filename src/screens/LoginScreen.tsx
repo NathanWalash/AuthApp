@@ -5,10 +5,9 @@ import {
   TextInput,
   Button,
   Text,
-  StyleSheet,
-  ActivityIndicator,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -22,17 +21,16 @@ export default function LoginScreen({
   onCreateAccount,
   onForgotPassword,
 }: Props) {
-  const [email, setEmail]     = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]     = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
 
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      // onAuthStateChanged will switch to HomeScreen
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unexpected error.');
     } finally {
@@ -41,28 +39,29 @@ export default function LoginScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Log In</Text>
-
+    <SafeAreaView className="flex-1 bg-white px-6 justify-center">
+      <Text className="text-3xl font-bold text-center mb-6">Log In</Text>
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-4"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
-        style={styles.input}
       />
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-2"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={styles.input}
       />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <Text className="text-red-500 text-center mb-4">{error}</Text>
+      )}
 
-      <View style={styles.button}>
+      <View className="mb-4">
         {loading ? (
           <ActivityIndicator />
         ) : (
@@ -70,41 +69,17 @@ export default function LoginScreen({
         )}
       </View>
 
-      <TouchableOpacity onPress={onForgotPassword} style={styles.link}>
-        <Text style={styles.linkText}>Forgot your password?</Text>
+      <TouchableOpacity onPress={onForgotPassword}>
+        <Text className="text-blue-600 text-center mb-2">
+          Forgot your password?
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={onCreateAccount}
-        style={[styles.link, { marginTop: 12 }]}
-      >
-        <Text style={styles.linkText}>Don’t have an account? Sign Up</Text>
+      <TouchableOpacity onPress={onCreateAccount}>
+        <Text className="text-blue-600 text-center">
+          Don’t have an account? Sign Up
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#fff'
-  },
-  header: {
-    fontSize: 28, marginBottom: 24, textAlign: 'center'
-  },
-  input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12
-  },
-  button: {
-    marginTop: 16
-  },
-  error: {
-    color: 'red', textAlign: 'center', marginBottom: 12
-  },
-  link: {
-    alignSelf: 'center'
-  },
-  linkText: {
-    color: '#0066cc'
-  },
-});

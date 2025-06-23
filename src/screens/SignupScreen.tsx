@@ -5,10 +5,9 @@ import {
   TextInput,
   Button,
   Text,
-  StyleSheet,
-  ActivityIndicator,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { auth, db } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -17,10 +16,9 @@ import { doc, setDoc } from 'firebase/firestore';
 type Props = { onLogin: () => void };
 
 export default function SignupScreen({ onLogin }: Props) {
-  // form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName]   = useState('');
-  const [dob, setDob]             = useState(''); // format “YYYY-MM-DD”
+  const [dob, setDob]             = useState('');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
   const [confirm, setConfirm]     = useState('');
@@ -34,20 +32,17 @@ export default function SignupScreen({ onLogin }: Props) {
       return;
     }
     if (!firstName || !lastName || !dob) {
-      setError('Please fill out all profile fields.');
+      setError('Please fill out all fields.');
       return;
     }
     setLoading(true);
     try {
-      // create the user
       const cred = await createUserWithEmailAndPassword(
         auth,
         email.trim(),
         password
       );
       const uid = cred.user.uid;
-
-      // write profile data into Firestore under /users/{uid}
       await setDoc(doc(db, 'users', uid), {
         firstName,
         lastName,
@@ -55,7 +50,6 @@ export default function SignupScreen({ onLogin }: Props) {
         email: cred.user.email,
         createdAt: Date.now(),
       });
-      // onAuthStateChanged will now fire → HomeScreen
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unexpected error.');
     } finally {
@@ -64,58 +58,57 @@ export default function SignupScreen({ onLogin }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Create Account</Text>
+    <SafeAreaView className="flex-1 bg-white px-6 justify-center">
+      <Text className="text-3xl font-bold text-center mb-6">
+        Create Account
+      </Text>
 
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="First Name"
         value={firstName}
         onChangeText={setFirstName}
-        style={styles.input}
       />
-
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
-        style={styles.input}
       />
-
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Date of Birth (YYYY-MM-DD)"
         value={dob}
         onChangeText={setDob}
-        style={styles.input}
       />
-
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
-        style={styles.input}
       />
-
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-3"
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={styles.input}
       />
-
       <TextInput
+        className="border border-gray-300 rounded px-4 py-2 mb-4"
         placeholder="Confirm Password"
         value={confirm}
         onChangeText={setConfirm}
         secureTextEntry
-        style={styles.input}
       />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <Text className="text-red-500 text-center mb-4">{error}</Text>
+      )}
 
-      <View style={styles.button}>
+      <View className="mb-4">
         {loading ? (
           <ActivityIndicator />
         ) : (
@@ -123,22 +116,11 @@ export default function SignupScreen({ onLogin }: Props) {
         )}
       </View>
 
-      <TouchableOpacity onPress={onLogin} style={styles.link}>
-        <Text style={styles.linkText}>Already have an account? Log In</Text>
+      <TouchableOpacity onPress={onLogin}>
+        <Text className="text-blue-600 text-center">
+          Already have an account? Log In
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex:1, padding:24, justifyContent:'center', backgroundColor:'#fff' },
-  header:    { fontSize:28, marginBottom:24, textAlign:'center' },
-  input:     {
-    borderWidth:1, borderColor:'#ccc', borderRadius:6,
-    paddingHorizontal:12, paddingVertical:8, marginBottom:12,
-  },
-  button:    { marginTop:16 },
-  error:     { color:'red', textAlign:'center', marginTop:8 },
-  link:      { marginTop:24, alignSelf:'center' },
-  linkText:  { color:'#0066cc' },
-});

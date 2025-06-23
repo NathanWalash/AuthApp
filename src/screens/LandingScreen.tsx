@@ -1,12 +1,6 @@
 // src/screens/LandingScreen.tsx
 import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Button,
-} from 'react-native';
+import { SafeAreaView, Text, View, Button } from 'react-native';
 
 type Props = {
   onLogin: () => void;
@@ -15,23 +9,16 @@ type Props = {
 
 export default function LandingScreen({ onLogin, onCreateAccount }: Props) {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Welcome to AuthApp</Text>
-      <View style={styles.buttonContainer}>
+    <SafeAreaView className="flex-1 bg-white px-6 justify-center items-center">
+      <Text className="text-2xl font-bold mb-8">
+        Welcome to AuthApp
+      </Text>
+      <View className="w-4/5 mb-4">
         <Button title="Log In" onPress={onLogin} />
       </View>
-      <View style={styles.buttonContainer}>
+      <View className="w-4/5">
         <Button title="Create Account" onPress={onCreateAccount} />
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, backgroundColor: '#fff',
-    alignItems: 'center', justifyContent: 'center', padding: 24,
-  },
-  title: { fontSize: 24, marginBottom: 32 },
-  buttonContainer: { width: '80%', marginVertical: 8 },
-});
