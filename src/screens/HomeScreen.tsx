@@ -11,7 +11,7 @@ import {
 import { auth, db } from '../firebase/config';
 import { signOut, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import EditProfileScreen from './EditProfileScreen';
+import AccountSettingsScreen from './AccountSettingsScreen';
 
 interface Profile {
   firstName: string;
@@ -59,7 +59,7 @@ export default function HomeScreen({ user }: Props) {
 
   if (editing) {
     return (
-      <EditProfileScreen
+      <AccountSettingsScreen
         user={user}
         onDone={() => {
           setEditing(false);
